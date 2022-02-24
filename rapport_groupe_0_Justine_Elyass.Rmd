@@ -38,7 +38,7 @@ library("ggplot2")
 library(ggThemeAssist)
 df.countries <- read.csv("countries.csv", dec=",")
 rownames(df.countries) <- df.countries$Pays
-vec_retirer <- df.countries$Téléphones == "NA"
+vec_retirer <- is.na(df.countries$Téléphones)
 df.countries <- df.countries[!vec_retirer, ]
 ```
 
