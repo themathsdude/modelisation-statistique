@@ -53,7 +53,10 @@ $T$ est la réalisation d'une variable aléatoire $X$. Dans cette première part
 Avant toutes recherches plus précises sur notre variable, nous allons nous convaincre qu'elle est continue. Pour ce faire, traçons sa fonction de répartition empirique. 
 
 ```{r}
-a <- ggplot(df.countries, aes(Téléphones)) + stat_ecdf(geom="step") + labs(title="Fonction de répartition empirique de T" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("") 
+sommaire <- summary(df.countries$Téléphones)
+mu = sommaire["Mean"]
+a <- ggplot(df.countries, aes(Téléphones)) + stat_ecdf(geom="step") + labs(title="Fonction de répartition empirique de T" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
+a <- a + stat_function(fun = function(x) {pexp(x, rate = 1/mu)}, col = 'blue')
 cex.main = 2
 cex.lab = 1.5
 long <- length(unique(df.countries$Téléphones))
@@ -65,12 +68,19 @@ On voit que la fonction de répartition empirique réalise beaucoup de sauts. El
 Nous pouvons alors tracer son histogramme. 
   
 ```{r}
-hist <- ggplot(df.countries, aes(Téléphones)) + geom_histogram(bins = 8)
+dens_pareto <- function(x, k, xm) {
+  return((k*(xm/x)^k)/x)
+}
+hist <- ggplot(df.countries, aes(Téléphones)) + geom_histogram(bins = 8, aes(y = stat(density)))
 hist <- hist + labs(title="Histogramme de T" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
+hist <- hist + stat_function(fun = function(x) {dexp(x, rate = 1/mu)}, col = 'blue')
+xmin <- min(df.countries$Téléphones)
+xmin <- 1
+# hist <- hist + stat_function(fun = function(x) {dens_pareto(x, k=mu/(mu-xmin), xm = xmin)}, xlim=c(xmin, 1000))
 hist
 ```
   
-  Au vue de cet histogramme, nous pouvons penser que $T$ est un échantillon de loi exponentielle, ie $X$ suit une loi exponentielle de paramètre $\lambda$. L'espérance d'une loi exponentielle est $\frac{1}{\lambda}$. La méthode des moments nous propose la moyenne empirique de $T$ qui est un estimateur sans biais, consistant et asymptotiquement normal de l'espérance. Profitons-en pour afficher quelques caractéristiques de $T$: 
+  Au vue de cet histogramme, nous pouvons penser que $T$ est un échantillon de loi exponentielle, ie $X$ suit une loi exponentielle de paramètre $\lambda$. L'espérance d'une loi exponentielle est $\frac{1}{\lambda}$. La méthode des moments nous propose la moyenne empirique de $T$ qui est un estimateur sans biais, consistant et asymptotiquement normal de l'espérance de $T$, c'est à dire $\frac 1 \lambda$. Profitons-en pour afficher quelques caractéristiques de $T$: 
   
 ```{r}
 sommaire <- summary(df.countries$Téléphones)
@@ -85,8 +95,32 @@ Ainsi, la moyenne empirique de $T$ est $\hat \mu =$ `r mu`. En prenant $\hat \la
 
 3.  Le QQ-plot de entre les réalisation théoriques et empiriques de $T$.
    
-   
 ```{r}
+rexpsample <- rexp(length(df.countries$Téléphones), rate = 1/mu)
+ks.test(df.countries$Téléphones, rexpsample)
+```
+
+```{r}
+cdfexp <- function(x, rate) {
+  return(1-exp(rate*x))
+}
+df.qq <- data.frame(df.countries$Téléphones)
+names(df.qq) <- "Téléphones"
+df.qq$Téléphones <- df.qq$Téléphones/mu
+qqplot <- ggplot(data = df.qq, aes(sample = Téléphones)) + stat_qq(distribution = stats::qexp)
+qqplot <- qqplot + geom_abline(intercept = 0,slope = 1,col = "blue")
+qqplot
 
 ```
+
+```{r}
+ggplot(data=df.countries) + aes(x=as.factor(Région), y=Téléphones) + scale_x_discrete(guide = guide_axis(n.dodge=4)) + geom_boxplot()
+```
+
+```{r}
+ggplot(data=df.countries) + aes(y=Téléphones) + geom_boxplot()
+```
+
+
+
 
