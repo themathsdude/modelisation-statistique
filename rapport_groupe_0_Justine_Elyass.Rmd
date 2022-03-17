@@ -1,7 +1,7 @@
 ---
-title: "Mais qui as-des téléphones ?!"
+title: "Mais qui a des téléphones ?!"
 author: "Justine Blanchot et Elyass Sayd, Groupe 0"
-date: "13/02/2022"
+date: "25/04/2022"
 output: html_document
 ---
 
@@ -24,26 +24,25 @@ Avant la fameuse conférence *Apple Keynote* de 2007 par Steve Jobs où il annon
 ### Problématique et objectif
 
 A partir d'un jeu de données issu de Kaggle, publié en 2017 par Fernando Lasso, intitulé "Countries of the world" et rassemblant des données du gouvernement américain (Anciennes données du CIA World Factbook et International Consortium for the Advancement of Academic Publication  https://gsociology.icaap.org/dataupload.html), nous allons essayer d'expliquer la déjà existante fougue du téléphone mobile en 2000 en fonction de certains indicateurs. 
-Si le temps nous le permets, nous comparerons notre analyse avec une tendance plus récente, à l'aide de nouvelles données du World Factbook.
+
 
 Nous tenterons donc de répondre à la problématique suivante:
 
 #### **Aurions-nous pu anticiper la réussite du marché des téléphones portables dans un pays à l'aide des indicateurs classiques de développement? Si oui, à l'aide desquels? **
 
+Si le temps nous le permets, nous comparerons notre analyse avec nouvelles données plus récentes du World Factbook.
 
 ### I - Analyse descriptive des données
 
 #### A - Analyse du jeu de données
 
-Le jeu de données que nous avons choisi contient les données de 227 pays par rapport à 19 variables. Dans le cadre de cette étude, nous nous limiterons aux variables suivantes: la région d'appartenance du pays, la densité de population (nombre habitants par miles carré), le PIB par habitant et enfin la part de la population active travaillant dans l'agriculture, l’industrie et les services.
-
-Pour être en adéquation avec les consignes du projet, nous avons vérifié que nous avions bien plus de 100 données (227 dans notre cas), et nous avons choisi 6 variables d’intérêt, parce qu’il était recommandé d’en prendre 3 ou 4 minimum. Nous avons également renommé les noms des colonnes du fichier en français. On remarque également que notre variable d’intérêt possède 4 valeurs manquantes, nous décidons de les retirer.
-  
+Le jeu de données que nous avons choisi contient les données de 227 pays par rapport à 19 variables. Dans le cadre de cette étude, nous nous limiterons aux variables suivantes: la région d'appartenance du pays, la densité de population (nombre habitants par miles carré), le PIB par habitant et, enfin, la part de la population active travaillant dans l'agriculture, l’industrie et les services.
 
 ```{r}
 library("ggplot2")
 library("ggThemeAssist")
 library("gridExtra")
+library("GGally")
 df.original <- read.csv("countries.csv", dec=",")
 df.countries <- df.original[, c("Pays", "Téléphones", "Région", "Densité.population", "PIB", "Agriculture", "Industrie", "Services")]
 rownames(df.countries) <- df.countries$Pays
@@ -52,28 +51,49 @@ idx = apply(vec_retirer, 1, sum) == 0
 df.countries <- df.countries[idx, ]
 ```
 
+Pour être en adéquation avec les consignes du projet, nous avons choisi 6 variables d’intérêt, puisqu’il était recommandé d’en prendre 3 ou 4 minimum. Nous avons également renommé les noms des colonnes du fichier en français. 
+Nous nous sommes rendu compte  que notre variable d’intérêt possédait 4 valeurs manquantes. C'est également le cas pour certaines de nos variables explicatives. Nous avons décidé de retirer les pays où il manque des données de notre étude. Nous avons donc gardé 209 pays. Il était demandé d'avoir au minimum 100 données, ce qui est donc le cas dans notre étude. 
+  
+
+
 #### B - Analyse univariée de la variable d'intérêt
 
 Introduisons des notations:
 $T$, pour téléphones, est la variables à expliquer, c'est-à-dire le nombres de téléphones pour mille habitants. 
   
-$T$ est la réalisation d'une variable aléatoire $X$. Dans cette première partie, nous allons analyser les données de $T$ et essayer de déterminer la loi de $X$. Profitons-en pour afficher quelques caractéristiques de $T$:
+$T$ est la réalisation d'une variable aléatoire $X$. Dans cette première partie, nous allons analyser les données de $T$ et essayer de déterminer la loi de $X$.
+
+Commençons par regarder quelques caractéristiques de $T$:
 
 ```{r}
 sommaire <- summary(df.countries$Téléphones)
 mu = sommaire["Mean"]
 sommaire
+boxplot2 <- ggplot(data=df.countries) + aes(y=Téléphones) + geom_boxplot()
+boxplot2
 ```
+ 
+ 
+ On peut commencer à analyser les indicateurs statistiques de notre échantillon. Par lecture de notre sommaire et de notre box-plot, on on obtient que notre loi n'est pas symétrique, puisque la moyenne, 222,6 est différente de la médiane, 146.6. 
+ 
+ Nos deux indicateurs de tendance centrales sont assez bas. Notre premier quartile est à 32.6 mais surtout notre troisième quartile est égal à 364.5. Cela signifie que 75% des pays ont moins de 364.5 téléphones pour mille habitants. 
+ 
+  Notre étendue est de `r 898-0.2`, mais l'étendue est sensible aux valeurs aberrantes et nous voyons dans notre box-plot que nous en avons une. De plus, la longueur d'une des moustaches est assez élevée. L'écart-interquartile, plus robuste que l'étendu, est de `r 364.5-32.6`. Ainsi, la moitié des pays ont entre 32.6 et 364.5 téléphones pour mille habitants. 
+  
+  Nous allons pour l'instant garder l'observation "hors norme" mais nous reviendrons possiblement dessus dans d'autres parties du rapport. .  
+  
+  
+  
 
-Avant toutes recherches plus précises sur notre variable, nous allons nous convaincre qu'elle est continue. Pour ce faire, traçons sa fonction de répartition empirique. 
+Avant toutes recherches plus précises sur notre variable $T$, nous allons nous convaincre qu'elle est continue. Pour ce faire, traçons sa fonction de répartition empirique. 
 
 ```{r}
-fdrplot <- ggplot(df.countries, aes(Téléphones)) + stat_ecdf(geom="step") + labs(title="Fonction de répartition empirique de T" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
+fdrplot <- ggplot(df.countries, aes(Téléphones)) + stat_ecdf(geom="step") + labs(title="Fonction de répartition empirique de T" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("") + theme(plot.title = element_text(hjust = 0.5))
 long <- length(unique(df.countries$Téléphones))
 fdrplot
 ```
     
-On voit que la fonction de répartition empirique réalise beaucoup de sauts. Elle en réalise exactement `r long`. `r long` est "grand" devant 247 donc notre variable d’intérêt est continue. 
+On voit que la fonction de répartition empirique de $T$ réalise beaucoup de sauts. Elle en réalise exactement `r long`. `r long` est "grand" devant 209 donc notre variable d’intérêt est continue. 
   
 Nous pouvons alors tracer son histogramme. 
   
@@ -87,29 +107,28 @@ hist2 <- hist2 + labs(title="Histogramme de T", subtitles=" 10 sous-intervalles 
 grid.arrange(hist1, hist2)
 ```
   
-  Les histogrammes sont unimodaux avec un pic dans en 0, puis décroissant. On en déduit que dans notre jeu de données, beaucoup de pays ont moins de 100 téléphones pour mille habitants et à l'inverse, peu de pays on plus de de 700 téléphones pour mille habitants. 
+  Les histogrammes sont uni-modaux avec un pic dans en 0, puis décroissant. On en déduit que dans notre jeu de données, beaucoup de pays ont moins de 100 téléphones pour mille habitants et à l'inverse, peu de pays on plus de de 700 téléphones pour mille habitants. 
   
   Au vue de ces histogrammes, nous pouvons penser que $T$ est un échantillon de loi exponentielle, c'est-à-dire  $X$ suit une loi exponentielle de paramètre $\lambda$. L'espérance d'une loi exponentielle est $\frac{1}{\lambda}$. La méthode des moments nous propose la moyenne empirique de $T$ comme estimateur sans biais, consistant et asymptotiquement normal de l'espérance. 
   
 
-Nous avons vu dans le sommaire plus haut que la moyenne empirique de $T$ est $\hat \mu =$ `r mu`. En prenant $\hat \lambda = \frac{1}{236.1} = 4.24 \cdot 10^{-3}$, nous voulons vérifier que notre hypothèse est acceptable. Nous allons alors tracer:
+Nous avons vu dans le sommaire plus haut que la moyenne empirique de $T$ est $\hat \mu =$ `r mu`. En prenant $\hat \lambda =$ `r 1/mu`, nous voulons vérifier que notre hypothèse est acceptable c’est à dire que la variables Téléphones suit une loi exponentielle de paramètre $\hat\lambda =$ `r 1/mu`. Nous allons alors tracer:
    
 1.  L'histogramme de $T$ et la densité $\hat \lambda e^{\hat \lambda x}$
 
-2.  La fonction de répartition empirique de $T$ et sa fonction de répartition de $\hat \lambda e^{\hat \lambda x}$ .
+2.  La fonction de répartition empirique de $T$ et la fonction de répartition de $ e^{\hat \lambda x}$ .
 
-3.  Le QQ-plot de entre les réalisation théoriques et empiriques de $T$.
-
-4.  Quelques boxplot pour voir la répartition des données par zone géographique.
+3.  Le QQ-plot entre les quantiles théoriques $ e^{\hat\lambda x}$  et les quantiles empiriques de $T$.
+.
 
 ```{r}
 lambda = 1/mu
 hist <- ggplot(df.countries, aes(Téléphones)) + geom_histogram(bins = 8, aes(y = stat(density)))
 hist <- hist + labs(title="Histogramme de T" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
-hist <- hist + stat_function(fun = function(x) {dexp(x, rate = lambda)}, col = 'blue')
+hist <- hist + stat_function(fun = function(x) {dexp(x, rate = lambda)}, col = 'blue') + theme(plot.title = element_text(hjust = 0.5))
 
 fdrplot <- ggplot(df.countries, aes(Téléphones)) + stat_ecdf(geom="step") + labs(title="Fonction de répartition empirique de T" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
-fdrplot <- fdrplot + stat_function(fun = function(x) {pexp(x, rate = lambda)}, col = 'blue')
+fdrplot <- fdrplot + stat_function(fun = function(x) {pexp(x, rate = lambda)}, col = 'blue') + theme(plot.title = element_text(hjust = 0.5))
 
 cdfexp <- function(x, rate) {
   return(1-exp(rate*x))
@@ -119,26 +138,75 @@ df.qq <- data.frame(df.countries$Téléphones)
 names(df.qq) <- "Téléphones"
 df.qq$Téléphones <- df.qq$Téléphones/mu
 qqplot <- ggplot(data = df.qq, aes(sample = Téléphones)) + stat_qq(distribution = stats::qexp)
-qqplot <- qqplot + geom_abline(intercept = 0,slope = 1, col = "blue")
+qqplot <- qqplot + geom_abline(intercept = 0,slope = 1, col = "blue") + labs(title="Diagramme quantile-quantile") + xlab("Quantiles théoriques") + ylab("Quantiles obeservés") + theme(plot.title = element_text(hjust = 0.5))
 
-boxplot1 <- ggplot(data=df.countries) + aes(x=as.factor(Région), y=Téléphones) + scale_x_discrete(guide = guide_axis(n.dodge=4)) + geom_boxplot()
-boxplot2 <- ggplot(data=df.countries) + aes(y=Téléphones) + geom_boxplot()
 
-grid.arrange(hist, fdrplot, qqplot, boxplot2)
-boxplot1
+
+grid.arrange(qqplot,hist,fdrplot)
+
 
 ```
 
-L'adéquation n'est pas parfaite mais elle est suffisament raisonnable pour restenir l'hypothèse qu'il s'agit d'une loi exponentielle. 
+Tout d'abord, les points de notre QQ-plot s'alignent bien sur la première bissectrice. C'est encourageant. De même, notre histogramme approche la courbe de densité de notre loi théorique et notre fonction de répartition fait de même. 
+L'adéquation n'est pas parfaite mais elle est suffisamment raisonnable pour retenir l'hypothèse que $T$ suit une loi exponentielle de paramètre $\hat\lambda$. 
+
+Nous allons finaliser notre analyse uni-variée en réalisant un test de Kolmogorov-Smirnov sur notre échantillon, puisque la variables Téléphones et loi exponentielle sont toutes deux des lois continues. 
    
 ```{r}
 rexpsample <- rexp(length(df.countries$Téléphones), rate = lambda)
 ks.test(df.countries$Téléphones, rexpsample)
 ```
+```{r}
+## Il faut conclure ici
+```
+ 
 
-### II - Analyse bi-variée  
+#### C - Analyse bi-variée  
 
-#### A - Régression linéaire multiple
+Nous allons dans cette partie nous intéressée aux potentielles corrélation entre notre variables d’intérêt $T$ et les autres variables de notre jeu de données. 
+
+Commençons par calculer la matrice de corrélation et présentons un diagramme de dispersion de toutes les paires de variables, pour chaque variable quantitative de notre jeu de données. 
+```{r}
+
+df.countries.sans.pays<-df.countries[, -c(1)]
+df.countries.sans.pays.region<-df.countries.sans.pays[, -c(2)]
+df.countries.sans.pays.region<-scale(df.countries.sans.pays.region)
+df.countries.sans.pays.region<-as.data.frame(df.countries.sans.pays.region)
+ggpairs1 <- ggpairs(df.countries.sans.pays.region[, c(1:3)])
+ggpairs2<- ggpairs(df.countries.sans.pays.region[, c(1,4:6)])
+
+cor(df.countries.sans.pays.region)
+ggpairs1
+ggpairs2
+```
+ 
+ On a un facteur de corrélation d'environ 0.85 pour le couple de variables $T$ et PIB; on en déduit qu'elles sont fortement corrélées linéairement. Il en est de même pour les variables Services et $T$ avec un facteur de corrélation de 0.68.
+Finalement, la variable $T$ est également corrélée négativement à la variable Agriculture avec un coefficient de corrélation de -0,62.  
+
+En analysant maintenant les nuages du points des paires de variables, on en déduit que:
+
+($T$, Densité de population): les points ne sont pas du tout alignés
+
+($T$, PIB): les points relativement alignés ce qui était prévisible par l'analyse du coefficient de corrélation de ces deux variables. 
+
+($T$, Agriculture): 
+
+($T$, Industrie):
+
+($T$, Services):
+
+Nous avons maintenant une idée plus claire des liens entre notre variables d’intérêt et les variables quantitatives de notre jeu de données. 
+
+Nous allons terminer cette partie en nous intéressant à la variables Région, qui est une variable qualitative. Traçons le boxplot de la variable $T$ pour chaque modalité de la variables Région. 
+
+```{r}
+boxplot1 <- ggplot(data=df.countries) + aes(x=as.factor(Région), y=Téléphones) + scale_x_discrete(guide = guide_axis(n.dodge=4)) + geom_boxplot()
+boxplot1
+```
+
+ Les boxplots sont extrêmement différents, on peut penser que la région d’appartenance du pays joue un rôle important sur le nombre de téléphones pour mille habitants. On remarque qu'en Amérique du nord et en Europe de l'ouest, les médianes sont hautes alors qu'elles sont beaucoup plus basses en Afrique Sub-saharienne, en Océanie ou encore en Asie. Il y a parfois des observations hors-norme, notamment en Afrique sub-saharienne. Nous reviendrons sur ces observations plus loin dans le rapport. 
+
+### II- Régression linéaire multiple
 
 Dans cette partie, nous allons nous intéresser à une régression linéaire permettant d'exprimer le nombre de téléphone pour mille habitants parla densité de population (nombre habitants par miles carré), le PIB par habitant et enfin la part de la population active travaillant dans l'agriculture, l’industrie et les services.
 
@@ -176,7 +244,7 @@ On a 10 valeurs aberrantes dan un échantillon de taille 209.
 2) QQ-plot
 
 ```{r}
-#QQ-plot residus et studentisés
+#QQ-plot résidus et studentisés
 
 n <- length(df.countries$Téléphones)
 p <- mod1$rank
@@ -224,7 +292,7 @@ Il y a 7 valeurs qui dépassent les deux seuils.
 ##### 4) Distance de Cook
 
 ```{r}
-# Distance de cook
+# Distance de Cook
 df.cook <- data.frame(cook = cooks.distance(mod1))
 s1 <- qf(0.5,p,n-p)
 s2 <- qf(0.1,p,n-p)
