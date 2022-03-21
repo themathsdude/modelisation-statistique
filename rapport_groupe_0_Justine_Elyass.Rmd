@@ -24,6 +24,8 @@ h1, h2 {
 
 Avant la fameuse conférence *Apple Keynote* de 2007 par Steve Jobs où il annonçait la sortie du premier iPhone, personne n'aurait pu imaginer que les écrans tactiles se retrouveraient dans toutes les mains. L'iPhone était le précurseur du marché des smartphones qui a connu une des expansions les plus fulgurantes avec l'amélioration constante des infrastructures internet. Aurions-nous pu prévoir quels marchés allaient-être les plus réceptifs à l'arrivée de cette technologie? À l'aide de quels critères? Nous allons au fil de ce rapport nous questionner sur les corrélations possibles pour un pays donné entre le nombre de téléphones pour mille habitants et différents critères de développement. 
 
+
+
 ### Problématique et objectif
 
 
