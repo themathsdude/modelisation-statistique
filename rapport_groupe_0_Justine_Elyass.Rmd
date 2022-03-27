@@ -1,6 +1,5 @@
 ---
 title: Mais qui a des téléphones ?!
-
 author: Justine Blanchot et Elyass Sayd, Groupe 0
 date: 25/04/2022
 output:
@@ -94,11 +93,11 @@ Les deux indicateurs de tendance centrales sont assez bas. Le premier quartile e
 L'étendue est de `r sommaire["Max."] - sommaire["Min."]`, mais cet indicateur est sensible aux valeurs aberrantes et nous voyons dans notre box-plot que nous en avons une. De plus, la longueur d'une des moustaches est assez élevée. L'écart-interquartile, plus robuste que l'étendue, est de `r sommaire["3rd Qu."] - sommaire["1st Qu."]`. Ainsi, la moitié des pays ont entre `r sommaire["1st Qu."]` et `r sommaire["3rd Qu."]` téléphones pour mille habitants.
 
 ```{r maximum}
-a <- which.max(df.countries$Téléphones)
-b <- df.countries[a,]
+indice_max <- which.max(df.countries$Téléphones)
+ligne_max <- df.countries[indice_max,]
 ```
 
-L'observation hors-norme est due aux `r b$Pays` soit les États-Unis. Ce n'est pas suprenant que ce soit le pays qui ait le plus de téléphones pour mille habitants. Nous voyons sur le box-plot qu'il n'est pas tant éloigné de la fin de la moustache. Pour l'instant nous gardons cette donnée, nous verrons plus tard si elle est à supprimer.
+L'observation hors-norme est due aux `r ligne_max$Pays` soit les États-Unis. Ce n'est pas suprenant que ce soit le pays qui ait le plus de téléphones pour mille habitants, au vu de leurs intérêts et rôle dans la technologie et l'essor des téléphones portables. Nous voyons sur le box-plot qu'elle n'est pas tant éloigné de la fin de la moustache. Pour l'instant nous gardons cette donnée, nous verrons plus tard si elle est à supprimer.
 
 <br>
 
@@ -255,7 +254,7 @@ summary_mod1 <- summary(mod1)
 summary_mod1
 ```
 
-Annalysons ce sommaire. Le $R^2$ vaut `summary_mod1$r.squared` qui est proche de 1 avec une p-valeur associée très faible,donc on rejette l'hypothèse selon laquelle tous les $\beta_j$ sont nuls pour $j=0,...,6$. Le modèle de régression linéaire permet d'expliquer relativement bien notre variable $T$.
+Annalysons ce sommaire. Le $R^2$ vaut `r summary_mod1$r.squared` qui est proche de 1 avec une p-valeur associée très faible,donc on rejette l'hypothèse selon laquelle tous les $\beta_j$ sont nuls pour $j=0,...,6$. Le modèle de régression linéaire permet d'expliquer relativement bien notre variable $T$.
 
 De plus, les tests de significativité des coefficients $\beta_1$ et $\beta_6$ donnent des p-valeurs inférieures à 0.001, donc $\beta_1$ et $\beta_6$ sont non nuls.
 

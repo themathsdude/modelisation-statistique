@@ -1621,10 +1621,11 @@ la moitié des pays ont entre 32.4 et 364.7 téléphones pour mille
 habitants.</p>
 <p>L’observation hors-norme est due aux United States soit les
 États-Unis. Ce n’est pas suprenant que ce soit le pays qui ait le plus
-de téléphones pour mille habitants. Nous voyons sur le box-plot qu’il
-n’est pas tant éloigné de la fin de la moustache. Pour l’instant nous
-gardons cette donnée, nous verrons plus tard si elle est à
-supprimer.</p>
+de téléphones pour mille habitants, au vu de leurs intérêts et rôle dans
+la technologie et l’essor des téléphones portables. Nous voyons sur le
+box-plot qu’elle n’est pas tant éloigné de la fin de la moustache. Pour
+l’instant nous gardons cette donnée, nous verrons plus tard si elle est
+à supprimer.</p>
 <p><br></p>
 <p>Avant toutes recherches plus précises sur notre variable <span class="math inline">\(T\)</span>, nous allons nous convaincre qu’elle
 est continue. Pour ce faire, traçons sa fonction de répartition
@@ -1789,10 +1790,8 @@ Residual standard error: 93.65 on 201 degrees of freedom
 Multiple R-squared:  0.8199,    Adjusted R-squared:  0.8145 
 F-statistic: 152.5 on 6 and 201 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Annalysons ce sommaire. Le <span class="math inline">\(R^2\)</span>
-vaut <code>summary_mod1$r.squared</code> qui est proche de 1 avec une
-p-valeur associée très faible,donc on rejette l’hypothèse selon laquelle
-tous les <span class="math inline">\(\beta_j\)</span> sont nuls pour
-<span class="math inline">\(j=0,...,6\)</span>. Le modèle de régression
+vaut 0.8198771 qui est proche de 1 avec une p-valeur associée très
+faible,donc on rejette l’hypothèse selon laquelle tous les <span class="math inline">\(\beta_j\)</span> sont nuls pour <span class="math inline">\(j=0,...,6\)</span>. Le modèle de régression
 linéaire permet d’expliquer relativement bien notre variable <span class="math inline">\(T\)</span>.</p>
 <p>De plus, les tests de significativité des coefficients <span class="math inline">\(\beta_1\)</span> et <span class="math inline">\(\beta_6\)</span> donnent des p-valeurs inférieures
 à 0.001, donc <span class="math inline">\(\beta_1\)</span> et <span class="math inline">\(\beta_6\)</span> sont non nuls.</p>
