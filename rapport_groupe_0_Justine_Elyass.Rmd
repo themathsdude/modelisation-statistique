@@ -470,7 +470,7 @@ plot(choix, scale="adjr2")
 
 Nous gardons l'intégralité des variables restantes, c'est à dire l'intercept, le PIB, les services et le taux de natalité.
 
-```{r choix-modèle7}
+```{r choix-modèle8}
 mod6 <- lm(Téléphones ~ PIB + Services + Taux.de.natalité, data = nouvcountries)
 summary(mod6)
 

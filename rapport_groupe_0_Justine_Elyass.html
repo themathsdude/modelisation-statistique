@@ -1789,8 +1789,10 @@ Residual standard error: 93.65 on 201 degrees of freedom
 Multiple R-squared:  0.8199,    Adjusted R-squared:  0.8145 
 F-statistic: 152.5 on 6 and 201 DF,  p-value: &lt; 2.2e-16</code></pre>
 <p>Annalysons ce sommaire. Le <span class="math inline">\(R^2\)</span>
-vaut 0,8199 qui est proche de 1 avec une p-valeur associée très
-faible,donc on rejette l’hypothèse selon laquelle tous les <span class="math inline">\(\beta_j\)</span> sont nuls pour <span class="math inline">\(j=0,...,6\)</span>. Le modèle de régression
+vaut <code>summary_mod1$r.squared</code> qui est proche de 1 avec une
+p-valeur associée très faible,donc on rejette l’hypothèse selon laquelle
+tous les <span class="math inline">\(\beta_j\)</span> sont nuls pour
+<span class="math inline">\(j=0,...,6\)</span>. Le modèle de régression
 linéaire permet d’expliquer relativement bien notre variable <span class="math inline">\(T\)</span>.</p>
 <p>De plus, les tests de significativité des coefficients <span class="math inline">\(\beta_1\)</span> et <span class="math inline">\(\beta_6\)</span> donnent des p-valeurs inférieures
 à 0.001, donc <span class="math inline">\(\beta_1\)</span> et <span class="math inline">\(\beta_6\)</span> sont non nuls.</p>
