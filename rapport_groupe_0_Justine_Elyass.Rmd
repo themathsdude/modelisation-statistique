@@ -51,6 +51,16 @@ Si le temps nous le permet, nous comparerons notre analyse avec des nouvelles do
 
 Le jeu de données que nous avons choisi contient les données de 227 pays par rapport à 19 variables. Dans le cadre de cette étude, nous nous limiterons aux variables suivantes: la région d'appartenance du pays, la densité de population (nombre d'habitants par miles carré), le PIB par habitant, le taux de natalité et, enfin, la part de la population active travaillant dans l'agriculture, l'industrie et les services.
 
+```{r installation packages, eval = FALSE}
+install.packages("ggplot2")
+install.packages("ggThemeAssist")
+install.packages("gridExtra")
+install.packages("GGally")
+install.packages("carData")
+install.packages("car")
+install.packages("leaps")
+```
+
 ```{r import-nettoyage-données}
 library("ggplot2")
 library("ggThemeAssist")
@@ -486,3 +496,30 @@ Téléphones = -8,04 + 0,01 PIB + 317,2 Services - 3,52 Taux de natalité + $\va
 </h4>
 
 <br>
+
+```{r téléphones-des-poissons}
+tel <- df.countries$Téléphones
+telp <- as.integer(tel/100)
+moy <- summary(telp)["Mean"]
+df.telp <- data.frame(telp)
+histp <- ggplot(df.telp, aes(telp)) + geom_histogram(aes(y = stat(density)))
+histp <- histp + labs(title="Comparaison histogramme-densité" ) + xlab("Nombres de téléphones scaled") + ylab("")
+# histp <- histp + geom_col(aes(y = dpois(telp, lambda = moy))) + theme(plot.title = element_text(hjust = 0.5))
+histp
+```
+
+```{r glm poisson}
+df.countries.sans.pays$Téléphones <- telp
+mdl1 <- glm(Téléphones ~ Région + PIB + Taux.de.natalité + Services, family="poisson", data = df.countries.sans.pays)
+summary(mdl1)
+
+```
+
+
+
+
+puis découper le jeu de donnéés en 80 20 
+
+
+
+
