@@ -75,7 +75,7 @@ library("carData")
 library("car")
 library("leaps")
 df.original <- read.csv("countries.csv", dec=",", encoding="UTF-8")
-df.countries <- df.original[, c("Pays", "Téléphones", "Région", "Densité.population", "PIB", "Agriculture", "Industrie", "Services", "Taux.de.natalité")]
+df.countries <- df.original[, c("Pays", "Téléphones", "Région", "Densité.population", "PIB", "Agriculture", "Services", "Taux.de.natalité")]
 rownames(df.countries) <- df.countries$Pays
 is_na = is.na(df.countries)
 countries_not_na = apply(is_na, 1, sum) == 0
@@ -139,49 +139,6 @@ histo
 
 L'histogramme est uni-modal avec un pic en 0, puis à tendance décroissante. Dans notre jeu de données, beaucoup de pays ont moins de 100 téléphones pour mille habitants et à l'inverse, peu de pays ont plus de de 700 téléphones pour mille habitants.
 
-Au vu de cet histogramme, nous pouvons penser que $T$ est un échantillon de loi exponentielle. Son espérance serait $\frac{1}{\lambda}$. La méthode des moments nous propose la moyenne empirique de $T$ comme estimateur sans biais, consistant et asymptotiquement normal de l'espérance.
-
-La moyenne empirique de $T$ est $\mu =$ `r mu`. En prenant $\hat \lambda =$ `r 1/mu`, vérifions que notre hypothèse est acceptable. Nous allons alors tracer le QQ-plot entre les quantiles théoriques de $X$  et les quantiles empiriques de $T$.  
-
-```{r T-exponentielle, fig.height = 6, fig.width = 8, out.width = "100%"}
-lambda = 1/mu
-hist <- ggplot(df.countries, aes(Téléphones)) + geom_histogram(bins = 8, aes(y = stat(density)))
-hist <- hist + labs(title="Comparaison histogramme-densité" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
-hist <- hist + stat_function(fun = function(x) {dexp(x, rate = lambda)}, col = 'blue') + theme(plot.title = element_text(hjust = 0.5))
-
-fdrplot <- ggplot(df.countries, aes(Téléphones)) + stat_ecdf(geom="step") + labs(title="Comparaison fonctions de répartition" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
-fdrplot <- fdrplot + stat_function(fun = function(x) {pexp(x, rate = lambda)}, col = 'blue') + theme(plot.title = element_text(hjust = 0.5))
-
-cdfexp <- function(x, rate) {
-  return(1 - exp(rate*x))
-}
-
-df.qq <- data.frame(df.countries$Téléphones)
-names(df.qq) <- "Téléphones"
-df.qq$Téléphones <- df.qq$Téléphones/mu
-qqplot <- ggplot(data = df.qq, aes(sample = Téléphones)) + stat_qq(distribution = stats::qexp)
-qqplot <- qqplot + geom_abline(intercept = 0,slope = 1, col = "blue") + labs(title="Diagramme quantile-quantile") + xlab("Quantiles théoriques") + ylab("Quantiles obeservés") + theme(plot.title = element_text(hjust = 0.5))
-
-grid.arrange(hist, fdrplot, qqplot, layout_matrix = rbind(c(1,3),c(2,3)), widths = c(1/2, 1/2))
-```
-
-<br>
-
-Les points de notre QQ-plot s'alignent bien sur la première bissectrice. C'est encourageant. L'adéquation n'est pas parfaite mais elle est suffisamment raisonnable pour retenir l'hypothèse que $T$ suit une loi exponentielle de paramètre $\hat \lambda$.
-
-Finalisons notre analyse univariée avec un test de Kolmogorov-Smirnov sur notre échantillon, puisque la variable Téléphones et la loi exponentielle sont toutes deux des lois continues.
-
-```{r test-T}
-rexpsample <- df.countries$Téléphones/mu
-kstest <- ks.test(df.countries$Téléphones, rexpsample)
-kstest
-p <- kstest$p.value
-```
-
-<br>
-
-Notre p-valeur est inférieure à 2.2e-16 donc on rejette $H_0$ au profit de l'hypothèse alternative $H_1$ sans hésitation. On peut conclure que notre variable $T$ ne suit pas une loi exponentielle de paramètre $\hat\lambda$. $T$ est la réalisation d'une autre loi, dont on ne connait pas la nature exacte.
-
 Nous avons ainsi terminé cette partie d'analyse univariée.
 
 <br>
@@ -196,10 +153,8 @@ Calculons la matrice de corrélation et présentons un diagramme de dispersion d
 
 df.countries.sans.pays <- df.countries[, -c(1)]
 df.countries.sans.pays.region <- df.countries.sans.pays[, -c(2)]
-df.countries.sans.pays.region <- scale(df.countries.sans.pays.region) # to scale or not to scale
-df.countries.sans.pays.region <- as.data.frame(df.countries.sans.pays.region)
-ggpairs1 <- ggpairs(df.countries.sans.pays.region[, c(1:3,7)])
-ggpairs2 <- ggpairs(df.countries.sans.pays.region[, c(1,4:6)])
+ggpairs1 <- ggpairs(df.countries.sans.pays.region[, c(1:3,6)])
+ggpairs2 <- ggpairs(df.countries.sans.pays.region[, c(1,4:5)])
 
 cor(df.countries.sans.pays.region)
 ggpairs1
@@ -244,7 +199,7 @@ Dans cette partie, nous allons nous intéresser à une régression linéaire per
 On considère le modèle linéaire suivant:
 
 <h4 style="text-align: center;">
-Téléphones = $\beta_0$ + $\beta_1$PIB + $\beta_2$Densité + $\beta_3$ Agriculture + $\beta_4$Industrie + $\beta_5$Services + $\beta_6$Taux de natalité + $\varepsilon$
+Téléphones = $\beta_0$ + $\beta_1$Densité + $\beta_2$PIB + $\beta_3$ Agriculture + $\beta_4$Services +  $\beta_5$Taux de natalité + $\varepsilon$
 </h4>
 
 Nous avons déjà une première idée des corrélations linéaires de nos variables grâce à l'analyse bi-variée. Formalisons ces relations et trouvons les coefficients $\beta_j$. Dans le but de pouvoir comparer les $\beta_j$, nous devons centrer-réduire nos données et réaliser une régression sur ce nouveau jeu de données.
@@ -252,18 +207,14 @@ Nous avons déjà une première idée des corrélations linéaires de nos variab
 Réalisons une première régression linéaire.
 
 ```{r sommaire-régression, out.width = "100%"}
-df.countries.scaled <- df.countries
-df.countries.scaled[,c(2,4:8)] <- scale(df.countries[,c(2,4:8)])
-df.countries.scaled <- as.data.frame(df.countries.scaled)
-
-mod1 <- lm(Téléphones ~  Densité.population + PIB + Agriculture + Services + Taux.de.natalité, data = df.countries.scaled)
+mod1 <- lm(Téléphones ~  Densité.population + PIB + Agriculture + Services + Taux.de.natalité, data = df.countries)
 summary_mod1 <- summary(mod1)
 summary_mod1
 ```
 
-Analysons ce sommaire. Le $R^2$ vaut `r summary_mod1$r.squared` qui est proche de 1 avec une p-valeur associée très faible, donc on rejette l'hypothèse selon laquelle tous les $\beta_j$ sont nuls pour $j=0,...,6$. Le modèle de régression linéaire permet d'expliquer relativement bien notre variable $T$.
+Analysons ce sommaire. Le $R^2$ vaut `r summary_mod1$r.squared` qui est proche de 1 avec une p-valeur associée très faible, donc on rejette l'hypothèse selon laquelle tous les $\beta_j$ sont nuls pour $j=0,...,5$. Le modèle de régression linéaire permet d'expliquer relativement bien notre variable $T$.
 
-De plus, les tests de significativité des coefficients $\beta_1$ et $\beta_6$ donnent des p-valeurs inférieures à 0.001, donc $\beta_1$ et $\beta_6$ sont non nuls.
+De plus, les tests de significativité des coefficients $\beta_2$, $\beta_4$,  et $\beta_5$ donnent des p-valeurs inférieures à 0.001, donc $\beta_2$, $\beta_4$,  et $\beta_5$ sont non nuls.
 
 Vérifions que nos variables sont de "bonne qualité" en cherchant si nous avons des valeurs aberrantes, des points leviers ou des distance de Cook trop élevées. Commençons par les valeurs aberrantes et les points leviers.
 
@@ -271,11 +222,11 @@ Vérifions que nos variables sont de "bonne qualité" en cherchant si nous avons
 
 ### B - Analyse des résidus
 
-Commençons par regarder si nous avons des valeurs aberrantes.
+Nous allons vérifier que nos variables sont de "bonnes qualités" en cherchant si nous avons des valeurs aberrantes, des points leviers ou des distance de Cook trop élevées. Commençons par les valeurs aberrantes et les points leviers.
 
-```{r résidus-student-levier, out.width = "70%"}
+```{r résidus-student-levier, fig.width = 11, out.width = "100%"}
 df.residus <- data.frame(residu = rstudent(mod1))
-n <- length(df.countries.scaled$Téléphones)
+n <- length(df.countries$Téléphones)
 
 ID_suspect <- (1:n)[abs(df.residus$residu) > 2]
 # n-p-1=203 >30 donc OK de prendre 2
@@ -312,10 +263,10 @@ plot_levier <- plot_levier + xlab('Index') + ylab('hii') + labs(title="Analyse d
 
 nb_leviers <- sum(df.H$H > seuil1)
 
-grid.arrange(plot_levier , plot_rstudent, layout_matrix = rbind(c(2,1),c(2,1)), widths = c(1/2, 1/2))
+grid.arrange(plot_levier , plot_rstudent, widths = c(1/2, 1/2))
 ```
 
-On a `r nb_aberrant` valeurs aberrantes dans un échantillon de taille `r dim(df.countries)[1]` donc 95% des résidus studientisés $t_i^*$ se trouvent dans l'intervalle [−2,2], soit une proportion acceptable. De plus, il y a `r nb_leviers` points leviers qui dépassent le deuxième seuil. Parmi les points leviers, l'observation 115, qui est le Luxembourg, est également une observation aberrante. Vérifions à présent les distances de Cook.
+On a `r nb_aberrant` valeurs aberrantes dans un échantillon de taille `r dim(df.countries)[1]` donc 95% des résidus studentisés $t_i^*$ se trouvent dans l'intervalle [−2,2], soit une proportion acceptable. De plus, il y a `r nb_leviers` points leviers qui dépassent le deuxième seuil. Parmi les points leviers, l'observation 115, qui est le Luxembourg, est également une observation aberrante. Vérifions à présent les distances de Cook.
 
 ```{r dist.cook, out.width = "70%"}
 df.cook <- data.frame(cook = cooks.distance(mod1))
@@ -354,7 +305,7 @@ Pour faire notre sélection parmi les variables restantes, nous allons utiliser 
 Commençons par un modèle avec nos 5 variables explicatives.
 
 ```{r choix-modèle1, fig.width = 10, out.width = "80%"}
-choix1 <- regsubsets(Téléphones~ Densité.population + PIB + Agriculture + Industrie + Taux.de.natalité , data = df.countries.scaled, nvmax = 5, really.big = T)
+choix1 <- regsubsets(Téléphones~ Densité.population + PIB + Agriculture + Taux.de.natalité , data = df.countries, nvmax = 5, really.big = T)
 par(mfrow = c(1, 2))
 plot(choix1, sclae="bic")
 plot(choix1, scale="adjr2")
@@ -363,22 +314,22 @@ plot(choix1, scale="adjr2")
 Nous supprimons les variables Densité et Agriculture.
 
 ```{r choix-modèle2}
-choix2 <- lm(Téléphones ~ PIB + Services + Taux.de.natalité, data = df.countries.scaled)
+mod2 <- lm(Téléphones ~ PIB + Services + Taux.de.natalité, data = df.countries)
 ```
 
 On itère le procédé avec nos 3 variables explicatives restantes.
 
-```{r choix-modèle3, fig.width = 10}
-choix3 <- regsubsets(Téléphones~ PIB + Services + Taux.de.natalité , data = df.countries.scaled, nvmax=3, really.big=T)
+```{r choix-modèle2, fig.width = 10}
+choix2 <- regsubsets(Téléphones~ PIB + Services + Taux.de.natalité , data = df.countries, nvmax=3, really.big=T)
 par(mfrow = c(1, 2))
-plot(choix3, scale="bic")
-plot(choix3, scale="adjr2")
+plot(choix2, scale="bic")
+plot(choix2, scale="adjr2")
 ```
 
 Nous gardons l'ensemble des variables restantes, c'est à dire le PIB, les Services et le Taux de natalité.
 
 ```{r modèle-choisi}
-mod_choisi <- choix2
+mod_choisi <- mod2
 summary(mod_choisi)
 ```
 
@@ -398,9 +349,9 @@ Avec $\varepsilon$ une variable aléatoire de loi normale centrée.
 
 Nous allons vérifier à nouveau que nous n'avons pas de valeurs problématiques en regardant les valeurs aberrantes, les points leviers et les distances de Cook.
 
-```{r residus-student3, out.width = "100%"}
+```{r residus-student3, fig.width = 11, out.width = "100%"}
 df.residus <- data.frame(residu = rstudent(mod_choisi))
-n <- length(df.countries.scaled$Téléphones)
+n <- length(df.countries$Téléphones)
 
 ID_suspect <- (1:n)[abs(df.residus$residu) > 2]
 # n-p-1=203 >30 donc OK de prendre 2
@@ -448,14 +399,14 @@ plot_cook <- plot_cook + xlab('Index') + ylab('Distance de Cook') + labs(title="
 
 l<- which.max(cooks.distance(mod_choisi))
 
-grid.arrange(plot_rstudent, plot_levier, layout_matrix = rbind(c(1,2)), widths = c(1/2, 1/2))
+grid.arrange(plot_rstudent, plot_levier, widths = c(1/2, 1/2))
 plot_cook
 ```
 
-On a `r nb_aberrant2` valeurs aberrantes dans un échantillon de taille `r dim(df.countries.scaled)[1]` donc 95% des résidus studentisés $t_i^*$ se trouvent dans l'intervalle [−2,2]. Il y a `r nb_leviers2` points leviers qui dépassent le deuxième seuil. Parmi eux, l'observation 115, qui est le Luxembourg, est également une observation aberrante. Nous avons une valeur qui a une distance de Cook qui dépasse le seuil préoccupant (`r s2`) qui est également le `r l`. Nous décidons donc de supprimer cette observation et de réaliser une nouvelle régression linéaire.
+On a `r nb_aberrant2` valeurs aberrantes dans un échantillon de taille `r dim(df.countries)[1]` donc 95% des résidus studentisés $t_i^*$ se trouvent dans l'intervalle [−2,2]. Il y a `r nb_leviers2` points leviers qui dépassent le deuxième seuil. Parmi eux, l'observation 115, qui est le Luxembourg, est également une observation aberrante. Nous avons une valeur qui a une distance de Cook qui dépasse le seuil préoccupant (`r s2`) qui est également le `r l`. Nous décidons donc de supprimer cette observation et de réaliser une nouvelle régression linéaire.
 
 ```{r sans-le-Luxembourg}
-nouvcountries <- df.countries.scaled[c(-115), ]
+nouvcountries <- df.countries[c(-115), ]
 mod_affiné <- lm(Téléphones ~  PIB + Services + Taux.de.natalité, data = nouvcountries)
 summary(mod_affiné)
 ```
@@ -466,7 +417,7 @@ Ainsi, après la sélection de variable et l'étude des observations, on en déd
 Téléphones = `r mod_affiné$coefficients['(Intercept)']` + `r mod_affiné$coefficients['PIB']` PIB + `r mod_affiné$coefficients['Services']` Services + `r mod_affiné$coefficients['Taux.de.natalité']` Taux de natalité + $\varepsilon$
 </h4>
 
-Nous avons centré et réduit nos observations donc nos coefficients $\beta_j$ sont comparables. Dans notre modèle linéaire, c'est le PIB du pays qui influence le plus $T$. La part de la population dans les services influence également positivement $T$, même si elle est moindre. Finalement, le taux de natalité du pays influence également $T$ mais négativement. 
+Comparer les t-valeurs ?
 
 Notons que les coefficients diffèrent des coefficients précédents lorsqu'on avait gardé le Luxembourg. 
 
@@ -496,8 +447,9 @@ qq.plot
 Le QQ-plot des résidus studentisés contre les quantiles d'une loi de Student de degrés de liberté n-p-1 =`r n-p-1` semble raisonnable.
 Nous validons l'hypothèse de la normalité des résidus. Notre modèle linéaire est donc Gaussien.
 
+<br>
 
-## III - Modélisation linéaire avec variable qualitative, réalisation d'une ANOVA. 
+## III - Modélisation linéaire avec variable qualitative, réalisation d'une ANCOVA. 
 
 ### A- Apprentissage du modèle 
 
@@ -505,17 +457,12 @@ La partie précédente nous a montré qu'un modèle linéaire explique relativem
 
 Nous avons observé dans la partie analyse bi-variée que la région d'appartenance du pays influe sur $T$ (box-plot par région). Nous voudrions donc savoir à quel point cette influence est forte, et s'il existe des effet d'interaction entre nos quatre variables explicatives.
 
-Réalisons une ANOVA sur un jeu de donné d'apprentissage comprenant 80% de nos pays étudiés, puis vérifier à l'aide des 20% de pays restants la précision de notre modèle trouvé.
+Réalisons une ANCOVA sur un jeu de donné d'apprentissage comprenant 80% de nos pays étudiés, puis vérifier à l'aide des 20% de pays restants la précision de notre modèle trouvé.
 <details>
 <summary>Sortie du modèle avec toutes les interactions</summary>
 
-```{r découpage-données}
-idx = sample(1:208, 166) # tirage au hasard garantie les bonnes distances de cook ?
-df.countries.scaled.app <- df.countries.scaled[idx,]
-df.countries.scaled.test <- df.countries.scaled[-idx,]
-
-
-complet <- lm(Téléphones~ Région * Services * Taux.de.natalité * PIB, data= df.countries.scaled.app)
+```{r summary-complet}
+complet <- lm(Téléphones~ Région + Services + Taux.de.natalité + PIB + Région*PIB + Région*Services + Région*Taux.de.natalité, data= df.countries)
 summary_complet <- summary(complet)
 summary_complet
 ```
@@ -526,33 +473,30 @@ Pour le modèle complet, le $R^2$ égal à `r summary_complet$r.squared` et la p
 
 Nous allons maintenant réaliser une sélection de variables. 
 
-```{r anova}
+```{r ancova}
 anova(complet)
 ```
 
 De nombreuses interactions entre nos variables ne semblent pas avoir d'effet significatif sur $T$, nous les supprimons. 
  
 ```{r mod-sans-int}
-mod.sans.int <- lm(Téléphones ~ Région + Services + Taux.de.natalité + PIB + PIB:Région + Services:Taux.de.natalité + Services:Région + Taux.de.natalité:PIB + Région:Taux.de.natalité , data= df.countries.scaled.app)
+mod.sans.int <- lm(Téléphones~ Région + Services + Taux.de.natalité + PIB + Région*PIB + Région*Services, data= df.countries.app)
 anova(mod.sans.int)
+mod.retenu <- mod.sans.int
 ```
 
-Idem, nous enlevons les 3 interactions non significatives. 
-```{r mod-sans-int2}
-mod.sans.int2 <-  lm(Téléphones~ Région + Services + Taux.de.natalité + PIB + PIB:Région + Services:Taux.de.natalité, data = df.countries.scaled.app)
-mod.retenu <- mod.sans.int2
-anova(mod.retenu)
-```
 
 Toutes les variables et interactions restantes sont significatives. La probabilité critique associée à la variable région est inférieure à 0.1%. On rejette donc l'hypothèse que la région d'appartenance du pays n'a pas d'effet sur $T$. Les variables PIB, Services et Taux de natalité ont encore un effet sur $T$ et il y a un effet d'interaction entre Région et PIB ainsi qu'entre Services et Taux de natalité. 
+
+# a voir en fonction des interactions qu'on mets dans lm
 
 Finissons par réaliser une analyse des résidus. 
 
 Commençons par regarder si nous avons des valeurs aberrantes et des points leviers. 
 
-```{r residus-student, fig.width = 9, out.width = "100%"}
-df.residus <- data.frame(residu = rstudent(mod.retenu))
-n <- length(df.countries.scaled.app$Téléphones)
+```{r residus-student, fig.width = 11, out.width = "100%"}
+df.residus <- data.frame(pays = df.countries.app$Pays, residu = rstudent(mod.retenu))
+n <- length(df.countries.app$Téléphones)
 
 ID_suspect <- (1:n)[abs(df.residus$residu) > 2]
 ID_suspect <- ID_suspect[!is.na(ID_suspect)]
@@ -565,7 +509,7 @@ plot_rstudent2 <- ggplot(data = df.residus) + aes(x = 1:n, y = residu, color=Gro
 plot_rstudent2 <- plot_rstudent2 + geom_hline(yintercept = -2, col = "blue", linetype = 2)
 plot_rstudent2 <- plot_rstudent2 + geom_hline(yintercept = 2, col = "blue", linetype = 2)
 plot_rstudent2 <- plot_rstudent2 + geom_text(aes(label=ID),hjust = 0, vjust = 0)
-plot_rstudent2 <- plot_rstudent2 + xlab('Index') + ylab('Résidus studentisés') + labs(title="Analyse des Valeurs aberrante, ANOVA") + theme(plot.title = element_text(hjust = 0.5))
+plot_rstudent2 <- plot_rstudent2 + xlab('Index') + ylab('Résidus studentisés') + labs(title="Analyse des valeurs aberrantes, ANCOVA") + theme(plot.title = element_text(hjust = 0.5))
 
 
 nb_aberrant3 <- sum(abs(df.residus$residu) > 2)
@@ -584,31 +528,30 @@ plot_levier2 <- ggplot(data = df.H) + aes(x=1:n, y = H, color = Groupe) + geom_p
 plot_levier2 <- plot_levier2 + geom_hline(yintercept = seuil1, col = "blue", linetype = 2)
 plot_levier2 <- plot_levier2 + geom_hline(yintercept = seuil2, col = "blue", linetype = 3)
 plot_levier2 <- plot_levier2 + geom_text(aes(label=ID), hjust=0, vjust=0)
-plot_levier2 <- plot_levier2 + xlab('Index') + ylab('hii') + labs(title="Analayse des points levier, ANOVA") + theme(plot.title = element_text(hjust = 0.5))
+plot_levier2 <- plot_levier2 + xlab('Index') + ylab('hii') + labs(title="Analayse des points levier, ANCOVA") + theme(plot.title = element_text(hjust = 0.5))
 
 
-grid.arrange(plot_rstudent2, plot_levier2, layout_matrix = rbind(c(1,2),c(1,2)), widths = c(1/2, 1/2))
+grid.arrange(plot_rstudent2, plot_levier2, widths = c(1/2, 1/2))
 
 nb_leviers3 <- sum(abs(hatvalues(mod.retenu) > seuil2))
 ```
 
 Nous avons `r nb_aberrant3` valeurs aberrantes, soit `(nb_aberrant3/n)*100` % de nos observations sont dans l'intervalle [-2;2] ce qui est acceptable (suffisamment proche de 0.5%). Nous avons `r nb_leviers3` points leviers. Aucune observation n'est à la fois levier et aberrante. Analysons à présent les distances de Cook. 
-
  
-```{r df-cook-anov, fig.width = 10, out.width = "100%"}
+```{r df-cook-anov, out.width = "70%"}
 df.cook <- data.frame(cook = cooks.distance(mod.retenu))
 s1 <- qf(0.5, p, n-p)
 s2 <- qf(0.1, p, n-p)
 plot_cook <- ggplot(data = df.cook) + aes(x=1:n, y = cook) + geom_point()
 plot_cook <- plot_cook + geom_hline(yintercept = s1, col = "blue", linetype = 2)
 plot_cook <- plot_cook + geom_hline(yintercept = s2, col = "blue", linetype = 3)
-plot_cook <- plot_cook + xlab('Index') + ylab('Distance de Cook') + labs(title="Analayse des distances de Cook, ANOVA") + theme(plot.title = element_text(hjust = 0.5))
+plot_cook <- plot_cook + xlab('Index') + ylab('Distance de Cook') + labs(title="Analayse des distances de Cook, ANCOVA") + theme(plot.title = element_text(hjust = 0.5))
 plot_cook
 ```
 
 Aucune distance de Cook ne dépasse le premier seuil et à fortiori le deuxième. Nous pouvons donc garder toutes nos observations. 
  
- Finalisons cette analyse en vérifiant l'hypothèse de normalité des résidus. 
+Finalisons cette analyse en vérifiant l'hypothèse de normalité des résidus. 
  
 ```{r normalité-résidus, out.width = "70%"}
 quant.t <- qt((1:n)/n, n-p-1)
@@ -623,12 +566,13 @@ qq.plot <-
     linetype = 2,
     size = 0.5
   )
-qq.plot <- qq.plot + xlab("Quantiles empiriques des résidus") + ylab("Quantiles d'une loi de Student T(n-p-1)") + labs(title="QQ-plot quantiles des studentisés contre quantiles théoriques, ANOVA") + theme(plot.title = element_text(hjust = 0.5))
+qq.plot <- qq.plot + xlab("Quantiles empiriques des résidus") + ylab("Quantiles d'une loi de Student T(n-p-1)") + labs(title="QQ-plot quantiles des résidus studentisés contre quantiles théoriques, ANCOVA") + theme(plot.title = element_text(hjust = 0.5))
 qq.plot
 ```
- 
- On peut valider l'hypothèse selon laquelle les résidus sont gaussiens. 
- Pour conclure, on accepte notre modélisation du problème
+
+On peut valider l'hypothèse selon laquelle les résidus sont gaussiens. 
+Pour conclure, on accepte notre modélisation du problème
+<br>
 
 ### B - Vérification du modèle
 
@@ -639,9 +583,13 @@ Téléphones = `r mod.retenu$coefficients['(Intercept)']` + `r mod.retenu$coeffi
 </h4>
 
 
-```{r prediction}
-n_test <- length(df.countries.scaled.test$Téléphones)
-prediction <- predict.lm(mod.retenu, newdata = df.countries.scaled.test)
+```{r découpage-prediction}
+idx = sample(1:208, 166) # tirage au hasard garantie les bonnes distances de cook ?
+df.countries.app <- df.countries[idx,]
+df.countries.test <- df.countries[-idx,]
+
+n_test <- length(df.countries.test$Téléphones)
+prediction <- predict.lm(mod.retenu, newdata = df.countries.test)
 summary_prediction <- summary(prediction)
 summary_prediction
 ```
@@ -649,18 +597,18 @@ summary_prediction
 Comparons avec les valeurs réelles en utilisant l'écart en valeur absolue (EVA) et l'écart quadratique moyen (EQM):
 
 ```{r EVA-EQM}
-EQM <- sum((prediction- df.countries.scaled.test$Téléphones)^2)/n_test
-EVA <- sum(abs(prediction- df.countries.scaled.test$Téléphones))/n_test
-var_test <- var(df.countries.scaled.test$Téléphones)
+EQM <- sum((prediction- df.countries.test$Téléphones)^2)/n_test
+EVA <- sum(abs(prediction- df.countries.test$Téléphones))/n_test
+var_test <- var(df.countries.test$Téléphones)
 rapport_variations <- EQM/var_test
 ```
 
-L'écart en valeur absolue vaut `r EVA` et l'écart quadratique moyen `r EQM`. Étant donné que l'EVA > l'EQM, les déviations sont en moyenne inférieures à 1, car l'EQM est plus sensible aux écarts supérieurs à 1. De plus, l'échantillon de test a pour moyenne `r summary(df.countries.scaled.test$Téléphones)['Mean']` et pour variance `r var_test`. On observe que EQM/var(Téléphones) = `r rapport_variations`, donc notre prédiction ne disperse pas beaucoup plus les données autour des valeurs réelles que la variance de l'échantillon les disperse autour de la moyenne.  
+L'écart en valeur absolue vaut `r EVA` et l'écart quadratique moyen `r EQM`. Étant donné que l'EVA > l'EQM, les déviations sont en moyenne inférieures à 1, car l'EQM est plus sensible aux écarts supérieurs à 1. De plus, l'échantillon de test a pour moyenne `r summary(df.countries.test$Téléphones)['Mean']` et pour variance `r var_test`. On observe que EQM/var(Téléphones) = `r rapport_variations`, donc notre prédiction ne disperse pas beaucoup plus les données autour des valeurs réelles que la variance de l'échantillon les disperse autour de la moyenne.  
 
 Vérifions que les prédictions restent dans de bons intervalles de confiance :
 ```{r intervalle-confiance}
 alpha <- 0.05
-X <- df.countries.scaled.test[, c('Pays', 'PIB', 'Services', 'Taux.de.natalité')]
+X <- df.countries.test[, c('Pays', 'PIB', 'Services', 'Taux.de.natalité')]
 p_test <- 4
 n_test <- dim(X)[1]
 X[, 'Pays'] <- rep(1, n_test)
@@ -670,7 +618,7 @@ X <- as.matrix(X)
 M <- solve(t(X) %*% X)
 beta_hat <- as.numeric(mod.retenu$coefficients[c('(Intercept)', 'PIB', 'Services', 'Taux.de.natalité')])
 t_n_p <- qt(1-alpha/2, n_test - p_test)
-sigma_hat <- sd(df.countries.scaled.test$Téléphones)
+sigma_hat <- sd(df.countries.test$Téléphones)
 
 ic_fun <- function(x_hat, beta_hat, t, sigma_hat, M) {
   IC = matrix(0, nrow = n_test, ncol = p_test)
@@ -689,8 +637,8 @@ IC <- matrix(IC, ncol = 2, byrow = TRUE)
 
 
 ```{r plot-IC-predict}
-prediction <- predict.lm(mod.retenu, newdata = df.countries.scaled.test, interval = "confidence")
-df.ic <- as.data.frame(cbind(pays = df.countries.scaled.test$Pays, prediction))
+prediction <- predict.lm(mod.retenu, newdata = df.countries.test, interval = "confidence")
+df.ic <- as.data.frame(cbind(pays = df.countries.test$Pays, prediction))
 rownames(df.ic) <- NULL
 ggplot(df.ic, aes(x = pays, y = fit)) + geom_point(size = 4) + geom_errorbar(aes(ymax = upr, ymin = lwr)) + xlab("Pays") + ylab("Prédictions") + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
 ```
@@ -699,12 +647,47 @@ On voit que la plupart des valeurs tombent dans les intervalles de confiance. No
 
 ### C - Conclusion
 
-L'analyse statistique nous a permis d'établir les caractéristiques principales de notre variable $T$ et d'établir ses corrélations entre les autres variables de notre jeu de données. À l'aide du modèle linéaire, nous avons établi un lien entre $T$ et les variables les plus explicatives. Enfin, l'ANOVA nous a confirmé la pertinence de notre modèle, indépendamment de notre variable qualitative, qui ne permets pas d'expliquer spécialement mieux nos données.
+L'analyse statistique nous a permis d'établir les caractéristiques principales de notre variable $T$ et d'établir ses corrélations entre les autres variables de notre jeu de données. À l'aide du modèle linéaire, nous avons établi un lien entre $T$ et les variables les plus explicatives. Enfin, l'ANCOVA nous a confirmé la pertinence de notre modèle, indépendamment de notre variable qualitative, qui ne permets pas d'expliquer spécialement mieux nos données.
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 
-## Annexe ?
+## Annexe
+
+### Analyse uni-variéé, adéquation à une loi
+
+Au vu de l'histogramme de $T$, nous pouvons penser que $T$ est un échantillon de loi exponentielle, c'est-à-dire que $T$ est la réalisation d'une variable aléatoire  $X$ suivant une loi exponentielle de paramètre $\lambda$. L'espérance d'une loi exponentielle est $\frac{1}{\lambda}$. La méthode des moments nous propose la moyenne empirique de $T$ comme estimateur sans biais, consistant et asymptotiquement normal de l'espérance.
+
+La moyenne empirique de $T$ est $\mu =$ `r mu`. En prenant $\hat \lambda =$ `r 1/mu`, nous voulons vérifier que notre hypothèse est acceptable. Nous allons alors tracer le QQ-plot entre les quantiles théoriques de $X$  et les quantiles empiriques de $T$. 
+
+
+```{r T-exponentielle, fig.height = 6, fig.width = 8, out.width = "100%"}
+
+df.qq <- data.frame(df.countries$Téléphones)
+names(df.qq) <- "Téléphones"
+df.qq$Téléphones <- df.qq$Téléphones/mu
+qqplot <- ggplot(data = df.qq, aes(sample = Téléphones)) + stat_qq(distribution = stats::qexp)
+qqplot <- qqplot + geom_abline(intercept = 0,slope = 1, col = "blue") + labs(title="Diagramme quantile-quantile") + xlab("Quantiles théoriques") + ylab("Quantiles obeservés") + theme(plot.title = element_text(hjust = 0.5))
+qqplot
+
+```
+
+Les points de notre QQ-plot s'alignent bien sur la première bissectrice. C'est encourageant. L'adéquation n'est pas parfaite mais elle est suffisamment raisonnable pour retenir l'hypothèse que $T$ suit une loi exponentielle de paramètre $\hat \lambda$. 
+
+Nous allons finaliser notre analyse univariée en réalisant un test de Kolmogorov-Smirnov sur notre échantillon, puisque la variable Téléphones et la loi exponentielle sont toutes deux de lois continues. 
+   
+```{r test-T}
+rexpsample <- df.countries$Téléphones/mu
+kstest <- ks.test(df.countries$Téléphones, rexpsample)
+kstest
+p <- kstest$p.value
+```
+
+Notre p-valeur est inférieure à 2.2e-16 donc on rejette $H_0$ au profit de l'hypothèse alternative $H_1$ sans hésitation. On peut conclure que notre variable $T$ ne suit pas une loi exponentielle de paramètre $\hat\lambda$. $T$ est la réalisation d'une autre loi, dont on ne connait pas la nature exacte.
+
+
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 Vérifions la qualité des résidus de prédiction
 
@@ -716,7 +699,7 @@ telp <- as.integer(tel/100)
 moy <- summary(telp)["Mean"]
 df.telp <- data.frame(telp)
 histp <- ggplot(df.telp, aes(telp)) + geom_histogram(aes(y = stat(density)))
-histp <- histp + labs(title="Comparaison histogramme-densité" ) + xlab("Nombres de téléphones scaled") + ylab("")
+histp <- histp + labs(title="Comparaison histogramme-densité" ) + xlab("Nombres de téléphones") + ylab("")
 # histp <- histp + geom_col(aes(y = dpois(telp, lambda = moy))) + theme(plot.title = element_text(hjust = 0.5))
 histp
 ```
