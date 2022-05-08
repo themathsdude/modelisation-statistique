@@ -1,7 +1,7 @@
 ---
-title: Les nombres de téléphones, un nouvel indicateur de développement?
+title: Le nombres de téléphones, un nouvel indicateur de développement?
 author: Justine Blanchot et Elyass Sayd, Groupe 0
-date: 25/04/2022
+date: Vendredi 13 Mai 2022
 output:
   html_document:
     toc: true
@@ -44,9 +44,9 @@ A partir d'un jeu de données issu de Kaggle, publié en 2017 par Fernando Lasso
 
 Nous tenterons donc de répondre à la problématique suivante:
 
-**Le nombre de téléphones portables pour mille habitants est-il un nouvel indicateur pertinent pour mesurer le développement d'un pays? Ou est-il lui même une expression de d'autres critères déjà existants?**
-
-
+<div style="border:3px; border-style:solid; border-color:#FF0000; padding: 1em;">
+**Le nombre de téléphones portables pour mille habitants est-il un nouvel indicateur pertinent pour mesurer le développement d'un pays? Ou est-il lui même une expression  d'autres critères déjà existants?**
+</div>
 
 ***
 
@@ -209,7 +209,7 @@ Réaliser une  première régression sur notre jeu de données centré-réduit.
 
 
 ```{r sommaire-régression}
-df.countries.scale<-df.countries
+df.countries.scale <- df.countries
 df.countries.scale[,c(2,4:8)] <- scale(df.countries[,c(2,4:8)])
 df.countries.scale <- as.data.frame(df.countries.scale)
 
@@ -220,15 +220,15 @@ summary_mod1
 
 Analysons ce sommaire. Le $R^2$ vaut `r round(summary_mod1$r.squared,2)` qui est proche de 1 avec une p-valeur associée très faible, donc on rejette l'hypothèse selon laquelle tous les $\beta_j$ sont nuls pour $j=0,...,5$. Le modèle de régression linéaire permet d'expliquer relativement bien notre variable $T$.
 
-De plus, les tests de significativité des coefficients $\beta_2$, $\beta_4$,  et $\beta_5$ donnent des p-valeurs inférieures à 0.001, donc $\beta_2$, $\beta_4$,  et $\beta_5$ sont non nuls.
+De plus, les tests de significativité des coefficients $\beta_2$, $\beta_4$,  et $\beta_5$ donnent des p-valeurs inférieures à 0.001, donc $\beta_2$, $\beta_4$, et $\beta_5$ sont non nuls.
 
-Regardons d'un peu plus près toutes nos obeservations. 
+Regardons d'un peu plus près toutes nos observations. 
 
 <br>
 
 ### B - Analyse des résidus
 
-Nous allons vérifier que nos obeservations sont de "bonnes qualités" en cherchant si nous avons des valeurs aberrantes, des points leviers ou des distance de Cook trop élevées. Commençons par les valeurs aberrantes et les points leviers.
+Nous allons vérifier que nos observations sont de "bonnes qualités" en cherchant si nous avons des valeurs aberrantes, des points leviers ou des distance de Cook trop élevées. Commençons par les valeurs aberrantes et les points leviers.
 
 ```{r résidus-student-levier, fig.width = 11}
 df.residus <- data.frame(residu = rstudent(mod1))
@@ -341,7 +341,7 @@ summary(mod_choisi)
 
 Finalement, après l'étape de sélection, notre modèle linéaire s'écrit:
 
-<h4 style="text-align: center;">
+<h4 style="text-align: center; border-style:solid; border-color:#FF0000; padding: 1em;">
 
 Téléphones = `r round(mod_choisi$coefficients['PIB'],2)` PIB + `r round(mod_choisi$coefficients['Services'],2)` Services - `r abs(round(mod_choisi$coefficients['Taux.de.natalité'],2))` Taux de natalité + $\varepsilon$
 
@@ -419,16 +419,16 @@ summary(mod_affiné)
 
 Ainsi, après la sélection de variable et l'étude des observations, on en déduit que notre modèle linéaire s'écrit :
 
-<h4 style="text-align: center;">
+<h4 style="text-align: center; border-style:solid; border-color:#FF0000; padding: 1em;">
 Téléphones = `r round(mod_affiné$coefficients['PIB'],2)` PIB + `r round(mod_affiné$coefficients['Services'],2)` Services - `r abs(round(mod_affiné$coefficients['Taux.de.natalité'],2))` Taux de natalité + $\varepsilon$
 </h4>
 
 
-Nous avons centré et réduit nos observations donc nos coefficients $\beta_j$ sont comparables. Dans notre modèle linéaire, c'est le PIB du pays qui influence le plus $T$. La part de la population dans les services inflence également positivement $T$, même si cette influence est moindre. Finalement, le taux de natalité du pays infleunce également $T$ mais cette fois-ci négativement.
+Nous avons centré et réduit nos observations donc nos coefficients $\beta_j$ sont comparables. Dans notre modèle linéaire, c'est le PIB du pays qui influence le plus $T$. La part de la population dans les services influence également positivement $T$, même si cette influence est moindre. Finalement, le taux de natalité du pays influence également $T$ mais cette fois-ci négativement.
 
 Notons que les coefficients diffèrent des coefficients précédents lorsqu'on avait gardé le Luxembourg, notamment le coefficient devant le PIB et celui devant le taux de natalité. 
 
-À présent, nous allons réaliser une analyse de la normalité des résidus, pour vérifier si notre modèle linéaire est bien Gaussien. Traçons un QQ-plot qui compare les quantiles empiriques associés aux studentisés ($t_1^*,...,t_n^*$) aux quantiles de la loi de Student $\mathcal{T}(n-p-1)$ pour valider l'hypothèse que les résidus suivent une loi normale.
+À présent, nous allons réaliser une analyse de la normalité des résidus, pour vérifier si notre modèle linéaire est bien Gaussien. Traçons un QQ-plot qui compare les quantiles empiriques associés aux studentisés ($t_1^*,...,t_n^*$) aux quantiles de la loi de Student $\mathcal{T}(n-p-1)$ , ou n=207 et p=4, pour valider l'hypothèse de la normalité des résidus.
 
 ```{r qqplot-residus, out.width = "70%"}
 n <- length(nouvcountries$Téléphones)
@@ -452,20 +452,68 @@ qq.plot
 ```
 
 Le QQ-plot des résidus studentisés contre les quantiles d'une loi de Student de degrés de liberté n-p-1 =`r n-p-1` semble raisonnable.
-Nous validons l'hypothèse de la normalité des résidus. Notre modèle linéaire est donc Gaussien.
+Nous validons l'hypothèse de la normalité des résidus. Notre modèle linéaire est Gaussien.
+
+
+On peut donc conclure que le nombre de téléphones pour mille habitants est liés linéairement à des caractéristiques préalablement existantes. Ce n'est donc pas un critère de développement qui bouscule les classifications déjà établies. 
+ 
+Terminons avec un peu de cross-validation, en découpant aléatoirement notre jeu de données en 80/20 :
+
+```{r découpage-prediction}
+idx = sample(1:208, 166)
+df.countries.app <- df.countries.scale[idx,]
+df.countries.test <- df.countries.scale[-idx,]
+
+n_test <- length(df.countries.test$Téléphones)
+prediction <- predict.lm(mod_affiné, newdata = df.countries.test)
+summary_prediction <- summary(prediction)
+summary_prediction
+```
+
+Comparons avec les valeurs réelles en utilisant l'écart en valeur absolue (EVA) et l'écart quadratique moyen (EQM):
+
+```{r EVA-EQM}
+EQM <- sum((prediction- df.countries.test$Téléphones)^2)/n_test
+EVA <- sum(abs(prediction- df.countries.test$Téléphones))/n_test
+var_test <- var(df.countries.test$Téléphones)
+rapport_variations <- EQM/var_test
+```
+
+L'écart en valeur absolue vaut `r round(EVA, 2)` et l'écart quadratique moyen `r round(EQM, 2)`. Étant donné que l'EVA > l'EQM, les déviations sont en moyenne inférieures à 1, car l'EQM est plus sensible aux écarts supérieurs à 1. De plus, l'échantillon de test a pour moyenne `r round(summary(df.countries.test$Téléphones)['Mean'], 2)` et pour variance `r round(var_test, 2)`. On observe que EQM/var(Téléphones) = `r round(rapport_variations, 2)`, donc notre prédiction ne disperse pas beaucoup plus les données autour des valeurs réelles que la variance de l'échantillon les disperse autour de la moyenne.  
+
+Vérifions que les prédictions restent dans de bons intervalles de confiance :
+
+```{r plot-IC-predict}
+prediction <- predict(mod_affiné, newdata = df.countries.test, interval = "confidence")
+df.ic <- as.data.frame(cbind(pays = df.countries.test$Pays, tel = df.countries.test$Téléphones, prediction))
+rownames(df.ic) <- NULL
+ggplot(df.ic, aes(x = pays, y = fit)) + geom_point(size = 4) + geom_errorbar(aes(ymax = upr, ymin = lwr)) + xlab("Pays") + ylab("Prédictions") + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
+```
+
+On voit que la plupart des valeurs tombent dans leurs intervalles de confiance. Cependant, parfois certaines valeurs sont très loin (selon le tirage aléatoire des 80/20). Peut-être qu'il nous faudrait un modèle plus affiné par région d'appartenance du pays ?
 
 <br>
 
-## III - Analyse de la variance
+## III -Modélisation linéaire avec variable qualitative
 
-### A - Modélisation 
+### A - Influence de la région et ANOVA
 
-La partie précédente nous a montré qu'un modèle linéaire explique relativement bien $T$. Dans cette partie, nous allons nous intéresser à l'importance de la région dans l'explication de $T$.
-Ajoutons une nouvelle variable, cette fois-ci qualitative, et potentiellement explicative de $T$ : la Région d'appartenance du pays. Nous gardons nos trois variables quantitatives précédentes (pour se limiter à une étude de taille acceptable) soit le PIB, le taux de natalité et la proportion de la population dans les services.
+La partie précédente nous a montré qu'un modèle linéaire explique relativement bien $T$. 
+Dans cette partie, nous voudrions savoir si la région d'appartenance du pays a une influence significative sur $T$. 
+La variable $T$ engendre-t-elle la distinction traditionnelle pays du sud / pays du nord? 
 
-Nous avons observé dans la partie analyse bi-variée que la région d'appartenance du pays influe sur $T$ (cf. Box-plot par région). Nous voudrions donc savoir à quel point cette influence est forte, et s'il existe des effet d'interaction entre nos variables explicatives.
 
-Nous allons réaliser une ANCOVA sur notre jeu de données centré-réduit. 
+Nous avons observé dans l'analyse bi-variée que la région d'appartenance du pays influe sur $T$ (cf. Box-plot par région). Nous allons ici voir dans quelle mesure cette influence à lieu. 
+
+Regardons notre variable Région.
+
+```{r variable-région}
+table(df.countries$Région)
+boxplot_region
+```
+La variable Région possède 11 niveaux avec des tailles différentes. Notre plan d'expérience est complet, répété et n'est pas équilibrée en chaque variable. 
+
+Commençons par estimer les paramètres de notre modèle linéaire.  
 
 ```{r summary-complet}
 complet <- lm(Téléphones ~ Région, data = df.countries)
@@ -473,26 +521,17 @@ summary_complet <- summary(complet)
 summary_complet
 ```
 
-</details>
 
-Pour le modèle complet, le $R^2$ égal à `r round(summary_complet$r.squared, 2)` et la p-valeur du test global de Fisher indique que le modèle explique mieux la réalité que le modèle contenant uniquement la constante. 
+Dans ce modèle, notre niveau de référence est la région Asie. Pour le modèle complet, le $R^2$ égal à `r round(summary_complet$r.squared, 2)`, qui est relativement éloigné de 1. La p-valeur du test global de Fisher indique que le modèle explique mieux la réalité que le modèle contenant uniquement la constante.
 
-Nous allons maintenant réaliser une sélection de variables. 
+Analysons maintenant la variance grâce à une ANOVA sur notre modèle.
 
-```{r ancova}
-anova(complet)
+```{r anova}
+anov <- anova(complet)
+anov
 ```
 
-L’interaction entre la région et le taux de natalité ainsi que l'intéraction entre la région et la variables Services n'ont pas d'effet sur $T$, nous les supprimons. 
- 
-```{r mod-sans-int}
-mod.sans.int <- lm(Téléphones~ Région + Services + Taux.de.natalité + PIB + Région*PIB, data= df.countries.scale)
-anova(mod.sans.int)
-mod.retenu <- mod.sans.int
-```
-
-
-Toutes les variables et interactions restantes sont significatives. La probabilité critique associée à la variable région est inférieure à 0.1%. On rejette donc l'hypothèse que la région d'appartenance du pays n'a pas d'effet sur $T$. Les variables PIB, Services et Taux de natalité ont encore un effet sur $T$ et il y a un effet d'interaction entre Région et le PIB. 
+La p-valeur associée à la variable région est de l'ordre de $\ 10^{-16}$. Il n'y a pas de doute: la région influence $T$. 
 
 
 ### B- Analyse des résidus
@@ -500,7 +539,7 @@ Toutes les variables et interactions restantes sont significatives. La probabili
 Commençons par regarder si nous avons des valeurs aberrantes et des points leviers. 
 
 ```{r residus-student, fig.width = 11}
-df.residus <- data.frame(pays = df.countries$Pays, residu = rstudent(mod.retenu))
+df.residus <- data.frame(pays = df.countries$Pays, residu = rstudent(complet))
 n <- length(df.countries$Téléphones)
 
 ID_suspect <- (1:n)[abs(df.residus$residu) > 2]
@@ -514,15 +553,15 @@ plot_rstudent2 <- ggplot(data = df.residus) + aes(x = 1:n, y = residu, color=Gro
 plot_rstudent2 <- plot_rstudent2 + geom_hline(yintercept = -2, col = "blue", linetype = 2)
 plot_rstudent2 <- plot_rstudent2 + geom_hline(yintercept = 2, col = "blue", linetype = 2)
 plot_rstudent2 <- plot_rstudent2 + geom_text(aes(label=ID),hjust = 0, vjust = 0)
-plot_rstudent2 <- plot_rstudent2 + xlab('Index') + ylab('Résidus studentisés') + labs(title="Analyse des valeurs aberrantes, ANCOVA") + theme(plot.title = element_text(hjust = 0.5))
+plot_rstudent2 <- plot_rstudent2 + xlab('Index') + ylab('Résidus studentisés') + labs(title="Analyse des valeurs aberrantes, ANOVA") + theme(plot.title = element_text(hjust = 0.5))
 
 
 nb_aberrant3 <- sum(abs(df.residus$residu) > 2)
 
-p <- mod.retenu$rank
+p <- complet$rank
 seuil1 <- 2*p/n
 seuil2 <- 3*p/n
-df.H <- data.frame(H = hatvalues(mod.retenu))
+df.H <- data.frame(H = hatvalues(complet))
 ID_levier <- (1:n)[df.H$H>seuil2]
 df.H$ID <- rep("", n)
 df.H[ID_levier, ]$ID <- ID_levier
@@ -533,24 +572,24 @@ plot_levier2 <- ggplot(data = df.H) + aes(x=1:n, y = H, color = Groupe) + geom_p
 plot_levier2 <- plot_levier2 + geom_hline(yintercept = seuil1, col = "blue", linetype = 2)
 plot_levier2 <- plot_levier2 + geom_hline(yintercept = seuil2, col = "blue", linetype = 3)
 plot_levier2 <- plot_levier2 + geom_text(aes(label=ID), hjust=0, vjust=0)
-plot_levier2 <- plot_levier2 + xlab('Index') + ylab('hii') + labs(title="Analayse des points levier, ANCOVA") + theme(plot.title = element_text(hjust = 0.5))
+plot_levier2 <- plot_levier2 + xlab('Index') + ylab('hii') + labs(title="Analayse des points levier, ANOVA") + theme(plot.title = element_text(hjust = 0.5))
 
 
 grid.arrange(plot_rstudent2, plot_levier2, widths = c(1/2, 1/2))
 
-nb_leviers3 <- sum(abs(hatvalues(mod.retenu) > seuil2))
+nb_leviers3 <- sum(abs(hatvalues(complet) > seuil2))
 ```
 
-Nous avons `r nb_aberrant3` valeurs aberrantes, soit `r round((nb_aberrant3/n)*100,2)` % de nos observations ne sont pas dans l'intervalle [-2;2] ce qui est acceptable (moins de 5%). Nous avons `r nb_leviers3` points leviers. Aucune observation n'est à la fois levier et aberrante. Analysons à présent les distances de Cook. 
+Nous avons `r nb_aberrant3` valeurs aberrantes, soit `r round((nb_aberrant3/n)*100,2)` % de nos observations ne sont pas dans l'intervalle [-2;2] ce qui est acceptable (moins de 5%). Nous avons `r nb_leviers3` points leviers, soit un nombre considérable.  Analysons à présent les distances de Cook. 
  
 ```{r df-cook-anov, out.width = "70%"}
-df.cook <- data.frame(cook = cooks.distance(mod.retenu))
+df.cook <- data.frame(cook = cooks.distance(complet))
 s1 <- qf(0.5, p, n-p)
 s2 <- qf(0.1, p, n-p)
 plot_cook <- ggplot(data = df.cook) + aes(x=1:n, y = cook) + geom_point()
 plot_cook <- plot_cook + geom_hline(yintercept = s1, col = "blue", linetype = 2)
 plot_cook <- plot_cook + geom_hline(yintercept = s2, col = "blue", linetype = 3)
-plot_cook <- plot_cook + xlab('Index') + ylab('Distance de Cook') + labs(title="Analayse des distances de Cook, ANCOVA") + theme(plot.title = element_text(hjust = 0.5))
+plot_cook <- plot_cook + xlab('Index') + ylab('Distance de Cook') + labs(title="Analayse des distances de Cook, ANOVA") + theme(plot.title = element_text(hjust = 0.5))
 plot_cook
 ```
 
@@ -576,47 +615,91 @@ qq.plot
 ```
 
 On peut valider l'hypothèse selon laquelle les résidus sont gaussiens. 
-Pour conclure, on accepte notre modélisation du problème
+
+
+Pour conclure, la région du pays d'appartenance joue un rôle quand au nombre de téléphones pour mille habitants. Les coefficients pour l'Amérique du Nord et l'Europe de l'ouest se détache positivement. Inversement, ce sont les pays d'Afrique sub-saharienne qui ont le taux le plus bas, suivis par les pays d'Afrique du Nord.  
 <br>
 
 
 
-### C - Conclusion de l'ANCOVA
+### C - Pays du nord et pays du sud
 
- L'ANCOVA nous a confirmé la pertinence de notre modèle linéaire, mais  elle ne permets pas d'expliquer spécialement mieux nos données. En effet, nous ajoutons une variable a prendre en compte et nous n'obtenons pas une modélisation beaucoup plus précise. Ceci est du au fait que la région d'appartenance du pays est une variable déductible en grnde partie des autres variables d'intérêt choisies.
+Dans notre régression précédente, nous avions des modalités avec une p-valeur associée suffisamment faible pour avoir des coefficients significatifs. Ce n'était pas le cas pour d'autres modalités, notamment la région Baltique, l'Afrique du nord ou l'Océanie. La région Baltique contient les données de seulement 3 pays et l'Afrique du nord de 5. Pour palier à cette problématique, nous décidons de regrouper des régions ensembles, suivant si elles sont dites du nord ou du sud.
+
+Nous créons donc deux nouveau sous-groupes:
+ - les régions du nord : l'Amérique du nord et l'Europe de l'ouest.
+ - les régions du sud : les 9 autres régions, soit l'ex-URSS, l'Amérique latine et caribéenne, l'Europe de l'est, les Baltiques le proche orient, l'Afrique du nord, l'Océanie, l'Asie et l'Afrique sub-saharienne.
+
+```{r nord-et-sud}
+idx_nord_a <- df.countries$Région == 'NORTHERN AMERICA                   '
+idx_nord_e <- df.countries$Région == 'WESTERN EUROPE                     '
+df.nordsud <- data.frame(df.countries)
+df.nordsud$Région <- "SUD"
+df.nordsud$Région[idx_nord_a] <- "NORD"
+df.nordsud$Région[idx_nord_e] <- "NORD"
+
+nordsud <- lm(Téléphones ~ Région, data = df.nordsud)
+summary_nordsud <- summary(nordsud)
+summary_nordsud
+
+boxplot_nordsud <- ggplot(data = df.nordsud) + aes(x = as.factor(Région), y = Téléphones) + geom_boxplot() + xlab("Nord et sud")
+boxplot_nordsud
+```
+
+Ici, nous créons clairement 2 modalités pour notre variable Région, bien séparées par leurs 1ers et 3èmes quartiles, ce qui nous est confirmé par l'ANOVA :
+
+```{r anova-nordsud}
+anova_nordsud <- anova(nordsud)
+anova_nordsud
+```
+
+Le box-plot nous suggère même qu'on pourrait prédire la région d'appartenance du pays en fonction du nombre de téléphones à l'aide d'une régressioon logistique. Mais ce n'est pas le sujet de cette analyse.
 
 
-## Conclusion générale
+## Conclusion
 
-  Au fil de cette analyse,  nous nous sommes rendus compte que le nombre de téléphones pour mille habitants est corrélé aux indicateurs dits classiques de développement. En effet, en 2000, le PIB, le taux de natalités et la part de la population dans les services suffisaient à prédire cette variable. Ainsi, le nombre de téléphones pour mille habitants n'ajoute pas une donnée suffisament pertinente lors d'une analyse de développement d'un pays. 
-  
-  Quand serait-il aujourd'hui? Le nombre de téléphones pour mille habitants a explosé dans tous les pays. En France, 54 millions de personnes en 2020 possédaient un smartphone (chiffre de l'Arcep, l'Autorité de régulation des communications électroniques) pour 67 millions d'habitants (chiffre de l'INSEE). On a donc un taux de 800 téléphones pour mille habitants. Nous n'étions qu'à 586 en 2000. Cette explosion n'a pas eu lieu que dans les pays développés. Les smartphones ont pénétrés les marchés des pays en développement au point d'avoisiner des taux rencontrés dans les pays développés. Pourtant, les critères comme le PIB et le taux de natalités ne se sont pas harmonisés au niveau mondial. 
-  
-  L'explication linéaire du nombre de téléphones pour mille habitants par les critères de développement serait-elle encore pertinente aujourd'hui?
-  
-  
+  Au fil de cette analyse, nous nous sommes rendus compte que le nombre de téléphones pour mille habitants est corrélé aux indicateurs dits classiques de développement. En effet, en 2000, le PIB, le taux de natalités et la part de la population dans les services suffisaient à prédire cette variable. Ainsi, notre variable d’intérêt n'ajoute pas d'information suffisamment pertinente lors d'une analyse de développement d'un pays. 
+
+
+  Quand serait-il aujourd'hui? Le nombre de téléphones pour mille habitants a explosé dans tous les pays. En France, 54 millions de personnes en 2020 possédaient un smartphone (chiffre de l'Arcep, l'Autorité de régulation des communications électroniques) pour 67 millions d'habitants (chiffre de l'INSEE). On a donc un taux de 800 téléphones pour mille habitants. Nous n'étions qu'à 586 en 2000. Cette explosion n'a pas eu lieu que dans les pays développés. Les smartphones ont pénétré les marchés émergents au point d'avoisiner des taux rencontrés dans les pays développés. Pourtant, les critères comme le PIB et le taux de natalités ne se sont pas harmonisés au niveau mondial. 
+
+
+  Avec de nouvelles données, on pourrait se demander si l'explication linéaire du nombre de téléphones pour mille habitants par les critères de développement serait-elle encore pertinente aujourd'hui?
+
+
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 
 ## Annexe
 
-
 ### Analyse uni-variéé, adéquation à une loi
 
-Au vu de l'histogramme de $T$, nous pouvions penser que $T$ etait un échantillon de loi exponentielle, c'est-à-dire que $T$ est la réalisation d'une variable aléatoire  $X$ suivant une loi exponentielle de paramètre $\lambda$. La méthode des moments nous propose la moyenne empirique de $T$ comme estimateur sans biais, consistant et asymptotiquement normal de l'espérance.
+Au vu de l'histogramme de $T$, nous pouvions penser que $T$ est un échantillon de loi exponentielle, c'est-à-dire que $T$ est la réalisation d'une variable aléatoire  $X$ suivant une loi exponentielle de paramètre $\lambda$. La méthode des moments nous propose la moyenne empirique de $T$ comme estimateur sans biais, consistant et asymptotiquement normal de l'espérance.
 
 La moyenne empirique de $T$ est $\mu =$ `r mu`. En prenant $\hat \lambda =$ `r 1/mu`, nous voulons vérifier que notre hypothèse est acceptable. Nous allons alors tracer le QQ-plot entre les quantiles théoriques de $X$  et les quantiles empiriques de $T$. 
 
 
 ```{r T-exponentielle, fig.height = 6, fig.width = 8, out.width = "70%"}
+lambda = 1/mu
+hist <- ggplot(df.countries, aes(Téléphones)) + geom_histogram(bins = 8, aes(y = stat(density)))
+hist <- hist + labs(title="Comparaison histogramme-densité" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
+hist <- hist + stat_function(fun = function(x) {dexp(x, rate = lambda)}, col = 'blue') + theme(plot.title = element_text(hjust = 0.5))
+
+fdrplot <- ggplot(df.countries, aes(Téléphones)) + stat_ecdf(geom="step") + labs(title="Comparaison fonctions de répartition" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
+fdrplot <- fdrplot + stat_function(fun = function(x) {pexp(x, rate = lambda)}, col = 'blue') + theme(plot.title = element_text(hjust = 0.5))
+
+cdfexp <- function(x, rate) {
+  return(1 - exp(rate*x))
+}
 
 df.qq <- data.frame(df.countries$Téléphones)
 names(df.qq) <- "Téléphones"
 df.qq$Téléphones <- df.qq$Téléphones/mu
 qqplot <- ggplot(data = df.qq, aes(sample = Téléphones)) + stat_qq(distribution = stats::qexp)
-qqplot <- qqplot + geom_abline(intercept = 0,slope = 1, col = "blue") + labs(title="Diagramme quantile-quantile") + xlab("Quantiles théoriques") + ylab("Quantiles obeservés") + theme(plot.title = element_text(hjust = 0.5))
-qqplot
+qqplot <- qqplot + geom_abline(intercept = 0,slope = 1, col = "blue") + labs(title="Diagramme quantile-quantile") + xlab("Quantiles théoriques") + ylab("Quantiles observés") + theme(plot.title = element_text(hjust = 0.5))
+
+grid.arrange(hist, fdrplot, qqplot, layout_matrix = rbind(c(1,3),c(2,3)), widths = c(1/2, 1/2))
 
 ```
 
@@ -633,8 +716,5 @@ p <- kstest$p.value
 
 Notre p-valeur est inférieure à 2.2e-16 donc on rejette $H_0$ au profit de l'hypothèse alternative $H_1$ sans hésitation. On peut conclure que notre variable $T$ ne suit pas une loi exponentielle de paramètre $\hat\lambda$. $T$ est la réalisation d'une autre loi, dont on ne connait pas la nature exacte.
 
-
-
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 
 
