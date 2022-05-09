@@ -470,9 +470,9 @@ On peut conclure que le nombre de téléphones pour mille habitants est lié lin
 Terminons cette partie avec une cross-validation, en découpant aléatoirement notre jeu de données en 80/20 :
 
 ```{r découpage-prediction}
-idx = sample(1:208, 166)
-df.countries.app <- df.countries.scale[idx,]
-df.countries.test <- df.countries.scale[-idx,]
+idx = sample(1:207, 166)
+df.countries.app <- nouvcountries[idx,]
+df.countries.test <- nouvcountries[-idx,]
 
 n_test <- length(df.countries.test$Téléphones)
 mod_prediction <- lm(Téléphones ~  PIB + Services + Taux.de.natalité, data = df.countries.app)
