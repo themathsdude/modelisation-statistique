@@ -467,7 +467,8 @@ df.countries.app <- df.countries.scale[idx,]
 df.countries.test <- df.countries.scale[-idx,]
 
 n_test <- length(df.countries.test$Téléphones)
-prediction <- predict.lm(mod_affiné, newdata = df.countries.test)
+mod_prediction <- lm(Téléphones ~  PIB + Services + Taux.de.natalité, data = df.countries.app)
+prediction <- predict.lm(mod_prediction, newdata = df.countries.test)
 summary_prediction <- summary(prediction)
 summary_prediction
 ```
@@ -486,7 +487,7 @@ L'écart en valeur absolue vaut `r round(EVA, 2)` et l'écart quadratique moyen 
 Vérifions que les prédictions restent dans de bons intervalles de confiance :
 
 ```{r plot-IC-predict}
-prediction <- predict(mod_affiné, newdata = df.countries.test, interval = "confidence")
+prediction <- predict(mod_prediction, newdata = df.countries.test, interval = "confidence")
 df.ic <- as.data.frame(cbind(pays = df.countries.test$Pays, tel = df.countries.test$Téléphones, prediction))
 rownames(df.ic) <- NULL
 ggplot(df.ic, aes(x = pays, y = fit)) + geom_point(size = 4) + geom_errorbar(aes(ymax = upr, ymin = lwr)) + xlab("Pays") + ylab("Prédictions") + theme(axis.text.x = element_blank(), axis.text.y = element_blank())
@@ -611,7 +612,7 @@ qq.plot <-
     linetype = 2,
     size = 0.5
   )
-qq.plot <- qq.plot + xlab("Quantiles empiriques des résidus") + ylab("Quantiles d'une loi de Student T(n-p-1)") + labs(title="QQ-plot quantiles des résidus studentisés contre quantiles théoriques, ANCOVA") + theme(plot.title = element_text(hjust = 0.5))
+qq.plot <- qq.plot + xlab("Quantiles empiriques des résidus") + ylab("Quantiles d'une loi de Student T(n-p-1)") + labs(title="QQ-plot quantiles des résidus studentisés contre quantiles théoriques, ANOVA") + theme(plot.title = element_text(hjust = 0.5))
 qq.plot
 ```
 
@@ -729,7 +730,7 @@ qq.plot <-
     linetype = 2,
     size = 0.5
   )
-qq.plot <- qq.plot + xlab("Quantiles empiriques des résidus") + ylab("Quantiles d'une loi de Student T(n-p-1)") + labs(title="QQ-plot quantiles des résidus studentisés contre quantiles théoriques, ANCOVA nord-sud") + theme(plot.title = element_text(hjust = 0.5))
+qq.plot <- qq.plot + xlab("Quantiles empiriques des résidus") + ylab("Quantiles d'une loi de Student T(n-p-1)") + labs(title="QQ-plot quantiles des résidus studentisés contre quantiles théoriques, ANOVA nord-sud") + theme(plot.title = element_text(hjust = 0.5))
 qq.plot
 ```
  On a du mal à croire à des résidus gaussiens ici. Un autre type de modélisation serait à envisager.
@@ -759,7 +760,7 @@ Au vu de l'histogramme de $T$, nous pouvions penser que $T$ est un échantillon 
 La moyenne empirique de $T$ est $\mu =$ `r mu`. En prenant $\hat \lambda =$ `r 1/mu`, nous voulons vérifier que notre hypothèse est acceptable. Nous allons alors tracer le QQ-plot entre les quantiles théoriques de $X$  et les quantiles empiriques de $T$. 
 
 
-```{r T-exponentielle, fig.height = 6, fig.width = 8, out.width = "70%"}
+```{r T-exponentielle, fig.height = 6, fig.width = 8, out.width = "100%"}
 lambda = 1/mu
 hist <- ggplot(df.countries, aes(Téléphones)) + geom_histogram(bins = 8, aes(y = stat(density)))
 hist <- hist + labs(title="Comparaison histogramme-densité" ) + xlab("Nombres de téléphones pour mille habitants") + ylab("")
